@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fakta Unik Flora dan fauna</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  transition:0.4s;
+  overflow-x:hidden;
+}
+
+body.dark{background:#0f172a;color:white;}
+body.light{background:#f1f5f9;color:#0f172a;}
+
+.appbar{
+  position:sticky;
+  top:0;
+  padding:15px;
+  text-align:center;
+  font-weight:bold;
+  backdrop-filter:blur(10px);
+  background:rgba(0,0,0,0.3);
+  z-index:2;
+}
+
+/* BACKGROUND DAUN */
+#leaf-bg{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:-1;
+  overflow:hidden;
+}
+
+.leaf{
+  position:absolute;
+  top:-50px;
+  font-size:20px;
+  animation:fall linear forwards;
+  opacity:0.6;
+}
+
+@keyframes fall{
+  0%{transform:translateY(-50px) translateX(0) rotate(0deg);}
+  100%{transform:translateY(100vh) translateX(100px) rotate(360deg);}
+}
+
+/* TOGGLE */
+.toggle{
+  position:fixed;
+  top:15px;
+  right:15px;
+  width:55px;
+  height:28px;
+  background:#64748b;
+  border-radius:20px;
+  cursor:pointer;
+  z-index:2;
+}
+.circle{
+  width:24px;height:24px;
+  background:white;
+  border-radius:50%;
+  position:absolute;
+  top:2px;left:2px;
+  transition:0.3s;
+}
+body.light .circle{
+  transform:translateX(27px);
+  background:yellow;
+}
+
+/* CONTAINER */
+.container{padding:15px;padding-bottom:80px;position:relative;z-index:1;}
+
+/* PAGE */
+.page{display:none;}
+.page.active{display:block;animation:fade 0.4s;}
+
+@keyframes fade{
+  from{opacity:0;transform:translateX(20px);}
+  to{opacity:1;transform:translateX(0);}
+}
+
+/* CARD */
+.card{
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+}
+body.dark .card{background:#1e293b;}
+body.light .card{background:white;}
+
+h2{color:#22c55e;margin-bottom:10px;}
+
+.fact{
+  padding:8px;
+  margin-bottom:8px;
+  border-radius:10px;
+}
+body.dark .fact{background:#334155;}
+body.light .fact{background:#e2e8f0;}
+
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+/* BUTTON ACTIVE */
+button.active{
+  background:#ef4444;
+  color:white;
+}
+
+/* CLICK ANIMATION */
+button:active{
+  transform:scale(0.9);
+}
+
+/* NAV */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  padding:10px;
+  background:rgba(0,0,0,0.4);
+  z-index:2;
+}
+.nav-item{text-align:center;cursor:pointer;}
+
+/* BADGE */
+#badge{
+  background:red;
+  color:white;
+  border-radius:10px;
+  padding:2px 6px;
+  font-size:10px;
+  margin-left:4px;
+}
+</style>
+</head>
+
+<body class="dark">
+
+<!-- 🌿 BACKGROUND -->
+<div id="leaf-bg"></div>
+
+<div class="appbar">🌿 Fakta Unik Flora fauna SMP Muhammadiyah 36</div>
+
+<div class="toggle" onclick="toggleMode()">
+  <div class="circle"></div>
+</div>
+
+<div class="container">
+
+<div id="home" class="page active"></div>
+
+<div id="explore" class="page">
+  <h2>🔍 Explore</h2>
+  <div id="list"></div>
+</div>
+
+<div id="fav" class="page">
+  <h2>❤️ Favorit</h2>
+</div>
+
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="showPage('home')">🏠</div>
+  <div class="nav-item" onclick="showPage('explore')">🔍</div>
+  <div class="nav-item" onclick="showPage('fav')">
+    ❤️ <span id="badge"></span>
+  </div>
+</div>
+
+<script>
+// DATA
+const data=[
+{id:1,name:"🐱 Kucing",facts:["Tidur 16 jam","Tidak bisa manis","Refleks cepat","Kumis sensor","3 kelopak mata"]},
+{id:2,name:"🐿️ Tupai",facts:["Lupa makanan","Tanam pohon","Gigi tumbuh","Ekor balance","Bisa meluncur"]},
+{id:3,name:"🌳 Kapuk",facts:["70 meter","Serat ringan","Batang berduri","Akar besar","Isi bantal"]}
+];
+
+// FAVORIT
+function getFav(){return JSON.parse(localStorage.getItem("fav"))||[];}
+function saveFav(f){localStorage.setItem("fav",JSON.stringify(f));}
+
+function toggleFav(id){
+  let fav=getFav();
+  if(fav.includes(id)){fav=fav.filter(x=>x!==id);}
+  else{fav.push(id);}
+  saveFav(fav);
+  renderHome();
+  renderExplore();
+  renderFav();
+  updateBadge();
+}
+
+// RENDER
+function renderHome(){
+  const home=document.getElementById("home");
+  home.innerHTML="";
+  data.forEach(item=>{
+    home.innerHTML+=`
+    <div class="card">
+      <h2>${item.name}</h2>
+      ${item.facts.map(f=>`<div class="fact">${f}</div>`).join("")}
+      <button class="${getFav().includes(item.id)?'active':''}" 
+      onclick="toggleFav(${item.id})">❤️ Favorit</button>
+    </div>`;
+  });
+}
+
+function renderExplore(){
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  data.forEach(item=>{
+    list.innerHTML+=`
+    <div class="card">
+      <h2>${item.name}</h2>
+      <button class="${getFav().includes(item.id)?'active':''}" 
+      onclick="toggleFav(${item.id})">❤️ Favorit</button>
+    </div>`;
+  });
+}
+
+function renderFav(){
+  const favPage=document.getElementById("fav");
+  const favIds=getFav();
+  const favData=data.filter(d=>favIds.includes(d.id));
+
+  favPage.innerHTML="<h2>❤️ Favorit</h2>";
+
+  if(favData.length===0){
+    favPage.innerHTML+="<p>Belum ada favorit</p>";
+    return;
+  }
+
+  favData.forEach(item=>{
+    favPage.innerHTML+=`
+    <div class="card">
+      <h2>${item.name}</h2>
+      <button onclick="toggleFav(${item.id})">❌ Hapus</button>
+    </div>`;
+  });
+}
+
+// BADGE
+function updateBadge(){
+  document.getElementById("badge").innerText=getFav().length||"";
+}
+
+// NAV
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// THEME
+function toggleMode(){
+  const body=document.body;
+  if(body.classList.contains('dark')){
+    body.classList.replace('dark','light');
+    localStorage.setItem("theme","light");
+  }else{
+    body.classList.replace('light','dark');
+    localStorage.setItem("theme","dark");
+  }
+}
+
+// 🌿 DAUN BACKGROUND
+function createLeaf(){
+  const leaf=document.createElement("div");
+  leaf.classList.add("leaf");
+
+  const leaves=["🍃","🍂","🌿"];
+  leaf.innerHTML=leaves[Math.floor(Math.random()*leaves.length)];
+
+  leaf.style.left=Math.random()*window.innerWidth+"px";
+  leaf.style.animationDuration=(3+Math.random()*5)+"s";
+
+  document.getElementById("leaf-bg").appendChild(leaf);
+
+  setTimeout(()=>{leaf.remove();},8000);
+}
+
+setInterval(createLeaf,500);
+
+// LOAD
+window.onload=function(){
+  renderHome();
+  renderExplore();
+  renderFav();
+  updateBadge();
+
+  const saved=localStorage.getItem("theme");
+  if(saved==="light"){
+    document.body.classList.replace('dark','light');
+  }
+};
+</script>
+
+</body>
+</html>
